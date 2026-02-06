@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<article class="detail-card">
+  <p class="back"><a href="{{ url_for('index') }}">\u2190 Back to all flavors</a></p>
+  <h2>{{ flavor.name }} <small>({{ flavor.nickname }})</small></h2>
+  <p class="description">{{ flavor.description }}</p>
+
+  <section>
+    <h3>Most Commonly Found In</h3>
+    <ul>
+      {% for style in flavor.common_styles %}
+        <li>{{ style }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h3>How Brewers Can Avoid It</h3>
+    <p>{{ flavor.avoidance }}</p>
+  </section>
+</article>
+{% endblock %}

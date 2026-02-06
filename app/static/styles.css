@@ -1,0 +1,277 @@
+:root {
+  --amber: #f2aa3c;
+  --malt: #6c3b17;
+  --foam: #fff6df;
+  --oak: #3a2313;
+  --hop: #718d2f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  background: radial-gradient(circle at top, #f8dfac 0%, #d4943f 45%, #6b3c1a 100%);
+  color: var(--oak);
+  min-height: 100vh;
+}
+
+.hero {
+  padding: 2rem 1rem;
+}
+
+.hero__content {
+  margin: 0 auto;
+  max-width: 900px;
+  background: linear-gradient(120deg, rgba(255, 246, 223, 0.92), rgba(242, 170, 60, 0.95));
+  border: 2px solid rgba(58, 35, 19, 0.55);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 28px rgba(20, 9, 4, 0.25);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.brand-link {
+  display: inline-block;
+  line-height: 0;
+}
+
+.brand-logo {
+  width: min(208px, 100%);
+  height: auto;
+  margin-top: 0.35rem;
+}
+
+.tag {
+  margin: 0;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hop);
+}
+
+.subtitle {
+  margin: 0.8rem 0 0;
+}
+
+.hero-nav {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.hero-nav a {
+  text-decoration: none;
+  border: 1px solid rgba(58, 35, 19, 0.4);
+  border-radius: 999px;
+  color: var(--oak);
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.35rem 0.8rem;
+  font-weight: 600;
+}
+
+.hero-nav a:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+.list-card,
+.detail-card {
+  background: rgba(255, 246, 223, 0.95);
+  border-radius: 14px;
+  border: 1px solid rgba(58, 35, 19, 0.35);
+  padding: 1.2rem;
+  box-shadow: 0 8px 16px rgba(20, 9, 4, 0.2);
+}
+
+.flavor-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.65rem;
+}
+
+.flavor-list a {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: center;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid rgba(58, 35, 19, 0.16);
+  border-radius: 8px;
+  padding: 0.65rem;
+  color: var(--oak);
+}
+
+.flavor-list a:hover {
+  border-color: var(--malt);
+  transform: translateY(-1px);
+}
+
+.name {
+  font-weight: 700;
+}
+
+.nick {
+  font-size: 0.88rem;
+  color: #754424;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: #704525;
+}
+
+.quiz-link {
+  display: inline-block;
+  text-decoration: none;
+  color: #fff;
+  background: var(--malt);
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+}
+
+.description {
+  font-size: 1.08rem;
+}
+
+.quiz-card {
+  background: rgba(255, 246, 223, 0.95);
+  border-radius: 14px;
+  border: 1px solid rgba(58, 35, 19, 0.35);
+  padding: 1.2rem;
+  box-shadow: 0 8px 16px rgba(20, 9, 4, 0.2);
+}
+
+.quiz-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.quiz-prompt {
+  margin-top: 0.8rem;
+  background: #fff;
+  border: 1px solid rgba(58, 35, 19, 0.16);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.quiz-prompt h3 {
+  margin-top: 0;
+}
+
+.options {
+  margin-top: 0.9rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.option-btn {
+  border: 1px solid rgba(58, 35, 19, 0.24);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--oak);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  font-size: 0.98rem;
+  cursor: pointer;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--malt);
+}
+
+.option-btn.correct {
+  background: #d9f0cc;
+  border-color: #4e7b2b;
+}
+
+.option-btn.wrong {
+  background: #fde1dc;
+  border-color: #a63f2d;
+}
+
+.feedback {
+  min-height: 1.2rem;
+  margin: 0.8rem 0 0;
+}
+
+.feedback.ok {
+  color: #285d18;
+}
+
+.feedback.bad {
+  color: #8b2d1d;
+}
+
+.quiz-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.next-btn {
+  border: none;
+  border-radius: 8px;
+  background: var(--malt);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.58rem 0.95rem;
+  cursor: pointer;
+}
+
+.next-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.ghost-link {
+  color: var(--malt);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.detail-card h3 {
+  margin-bottom: 0.4rem;
+}
+
+.back {
+  margin-top: 0;
+}
+
+.back a {
+  color: var(--malt);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 650px) {
+  .hero {
+    padding: 1rem 0.8rem;
+  }
+
+  .hero__content,
+  .container {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
+}

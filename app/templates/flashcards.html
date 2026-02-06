@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="quiz-card">
+  <h2>Off-Flavor Flashcards</h2>
+  <p class="small">Read each profile and choose the correct off-flavor from five options.</p>
+
+  <div id="quiz" class="quiz" data-total="{{ cards|length }}">
+    <div class="quiz-meta">
+      <p id="progress" class="small"></p>
+      <p id="score" class="small"></p>
+    </div>
+
+    <article class="quiz-prompt">
+      <h3 id="card-title"></h3>
+      <p id="card-description"></p>
+      <p><strong>Common styles:</strong> <span id="card-styles"></span></p>
+      <p><strong>Avoidance:</strong> <span id="card-avoidance"></span></p>
+    </article>
+
+    <div id="options" class="options"></div>
+    <p id="feedback" class="feedback"></p>
+
+    <div class="quiz-actions">
+      <button id="next-btn" type="button" class="next-btn" disabled>Next Card</button>
+      <a class="ghost-link" href="{{ url_for('index') }}">Back to flavor list</a>
+    </div>
+  </div>
+</section>
+
+<script id="cards-data" type="application/json">{{ cards|tojson }}</script>
+<script>
+  (() => {
+    const cards = JSON.parse(document.getElementById("cards-data").textContent);
+    const progressEl = document.getElementById("progress");
+    const scoreEl = document.getElementById("score");
+    const titleEl = document.getElementById("card-title");
+    const descriptionEl = document.getElementById("card-description");
+    const stylesEl = document.getElementById("card-styles");
+    const avoidanceEl = document.getElementById("card-avoidance");
+    const optionsEl = document.getElementById("options");
+    const feedbackEl = document.getElementById("feedback");
+    const nextBtn = document.getElementById("next-btn");
+
+    let index = 0;
+    let score = 0;
+    let answered = false;
+    let finished = false;
+
+    const renderCard = () => {
+      const card = cards[index];
+      answered = false;
+      finished = false;
+      progressEl.textContent = `Card ${index + 1} of ${cards.length}`;
+      scoreEl.textContent = `Score: ${score}`;
+      titleEl.textContent = `Identify: ${card.nickname}`;
+      descriptionEl.textContent = card.description;
+      stylesEl.textContent = card.common_styles.join(", ");
+      avoidanceEl.textContent = card.avoidance;
+      feedbackEl.textContent = "";
+      nextBtn.disabled = true;
+      nextBtn.textContent = index === cards.length - 1 ? "See Results" : "Next Card";
+
+      optionsEl.innerHTML = "";
+      card.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option-btn";
+        button.textContent = option;
+        button.addEventListener("click", () => handleAnswer(button, option, card));
+        optionsEl.appendChild(button);
+      });
+    };
+
+    const handleAnswer = (button, option, card) => {
+      if (answered) return;
+      answered = true;
+      const isCorrect = option === card.name;
+
+      Array.from(optionsEl.children).forEach((choice) => {
+        choice.disabled = true;
+        if (choice.textContent === card.name) {
+          choice.classList.add("correct");
+        }
+      });
+
+      if (isCorrect) {
+        score += 1;
+        button.classList.add("correct");
+        feedbackEl.textContent = "Correct.";
+        feedbackEl.className = "feedback ok";
+      } else {
+        button.classList.add("wrong");
+        feedbackEl.textContent = `Not quite. Correct answer: ${card.name}.`;
+        feedbackEl.className = "feedback bad";
+      }
+
+      scoreEl.textContent = `Score: ${score}`;
+      nextBtn.disabled = false;
+    };
+
+    nextBtn.addEventListener("click", () => {
+      if (finished) {
+        window.location.reload();
+        return;
+      }
+
+      if (index < cards.length - 1) {
+        index += 1;
+        renderCard();
+        return;
+      }
+
+      titleEl.textContent = "Session Complete";
+      descriptionEl.textContent = `You matched ${score} out of ${cards.length} off-flavor profiles.`;
+      stylesEl.textContent = "";
+      avoidanceEl.textContent = "";
+      optionsEl.innerHTML = "";
+      feedbackEl.textContent = "Use the button below to run all 50 cards again with new answer mixes.";
+      feedbackEl.className = "feedback";
+      progressEl.textContent = "Finished";
+      nextBtn.textContent = "Restart Flashcards";
+      nextBtn.disabled = false;
+      finished = true;
+    });
+
+    renderCard();
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,1 @@
+"""Beer Fault Finder package."""

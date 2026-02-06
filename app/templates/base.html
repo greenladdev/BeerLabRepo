@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title if title else 'Beer Fault Finder' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <p class="tag">Brew Lab Reference</p>
+        <a class="brand-link" href="{{ url_for('index') }}">
+          <img
+            class="brand-logo"
+            src="{{ url_for('static', filename='BeerFaultFinder.png') }}"
+            alt="Beer Fault Finder"
+          />
+        </a>
+        <p class="subtitle">50 common off-flavors, their likely beer style contexts, and practical prevention steps.</p>
+        <nav class="hero-nav">
+          <a href="{{ url_for('index') }}">Flavor Library</a>
+          <a href="{{ url_for('flashcards') }}">Flashcards Quiz</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">{% block content %}{% endblock %}</main>
+  </body>
+</html>

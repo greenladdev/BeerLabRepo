@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="list-card">
+  <h2>Top 50 Off-Flavors</h2>
+  <p class="small">Select a flavor to view causes, likely style appearance, and avoidance tips.</p>
+  <p><a class="quiz-link" href="{{ url_for('flashcards') }}">Start 50-card learning quiz</a></p>
+  <ul class="flavor-list">
+    {% for flavor in flavors %}
+      <li>
+        <a href="{{ url_for('flavor_detail', slug=flavor.slug) }}">
+          <span class="name">{{ flavor.name }}</span>
+          <span class="nick">{{ flavor.nickname }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}
