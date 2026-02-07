@@ -1,9 +1,9 @@
 :root {
-  --amber: #f2aa3c;
-  --malt: #6c3b17;
-  --foam: #fff6df;
-  --oak: #3a2313;
-  --hop: #718d2f;
+  --amber: #f3bf1a;
+  --malt: #1f1f22;
+  --foam: #ffffff;
+  --oak: #2b1d12;
+  --hop: #80530f;
 }
 
 * {
@@ -25,11 +25,11 @@ body {
 .hero__content {
   margin: 0 auto;
   max-width: 900px;
-  background: linear-gradient(120deg, rgba(255, 246, 223, 0.92), rgba(242, 170, 60, 0.95));
-  border: 2px solid rgba(58, 35, 19, 0.55);
+  background: var(--foam);
+  border: 2px solid rgba(243, 191, 26, 0.8);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 12px 28px rgba(20, 9, 4, 0.25);
+  box-shadow: 0 12px 28px rgba(20, 9, 4, 0.22);
 }
 
 .hero h1 {
@@ -58,6 +58,7 @@ body {
 
 .subtitle {
   margin: 0.8rem 0 0;
+  color: var(--oak);
 }
 
 .hero-nav {
@@ -69,16 +70,16 @@ body {
 
 .hero-nav a {
   text-decoration: none;
-  border: 1px solid rgba(58, 35, 19, 0.4);
+  border: 1px solid rgba(43, 29, 18, 0.3);
   border-radius: 999px;
   color: var(--oak);
-  background: rgba(255, 255, 255, 0.6);
+  background: #fff9eb;
   padding: 0.35rem 0.8rem;
   font-weight: 600;
 }
 
 .hero-nav a:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffe9b6;
 }
 
 .container {
