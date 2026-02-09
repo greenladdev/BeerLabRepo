@@ -372,3 +372,52 @@ body > * {
 #missed-count {
   margin: 0;
 }
+
+.library-tools {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.42rem;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(58, 35, 19, 0.22);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.tool-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #5a371d;
+}
+
+.tool-input,
+.tool-select {
+  width: 100%;
+  border: 1px solid rgba(58, 35, 19, 0.25);
+  border-radius: 8px;
+  background: #fffef9;
+  color: var(--oak);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.95rem;
+}
+
+#results-count {
+  margin: 0.2rem 0 0;
+}
+
+.flavor-item.is-hidden {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .library-tools {
+    grid-template-columns: 1fr 200px;
+    column-gap: 0.8rem;
+    row-gap: 0.35rem;
+    align-items: end;
+  }
+
+  #results-count {
+    grid-column: 1 / -1;
+  }
+}
