@@ -276,3 +276,16 @@ body {
     padding-right: 0.9rem;
   }
 }
+
+.site-footer {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+  color: #fdf5e4;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+}
