@@ -6,7 +6,7 @@ A Python + Flask web application with a beer-inspired interface that helps users
 
 - List page with the top 50 off-flavors
 - Flashcards quiz with 50 cards and 3 choices per card
-- Export/share tools for study sheets and troubleshooting guides (PDF/CSV)
+- Export/share tools for study sheets and troubleshooting guides (PDF)
 - Detail page for each flavor with:
   - Flavor description
   - Beer styles where it appears most often

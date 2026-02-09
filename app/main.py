@@ -1,10 +1,9 @@
-import csv
 import os
 import random
 import textwrap
-from io import BytesIO, StringIO
+from io import BytesIO
 
-from flask import Flask, Response, abort, render_template, send_file
+from flask import Flask, abort, render_template, send_file
 from reportlab.lib.pagesizes import LETTER
 from reportlab.pdfgen import canvas
 
@@ -138,20 +137,6 @@ def build_troubleshooting_rows(library: list[dict]) -> list[list[str]]:
     return rows
 
 
-def create_csv_response(filename: str, headers: list[str], rows: list[list[str]]) -> Response:
-    """Return CSV file response."""
-    output = StringIO()
-    writer = csv.writer(output)
-    writer.writerow(headers)
-    writer.writerows(rows)
-
-    return Response(
-        output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
-    )
-
-
 def create_pdf_response(
     title: str, filename: str, headers: list[str], rows: list[list[str]]
 ):
@@ -220,20 +205,6 @@ def create_app() -> Flask:
     @app.route("/flashcards")
     def flashcards():
         return render_template("flashcards.html", cards=build_flashcards())
-
-    @app.route("/export/study-sheet.csv")
-    def export_study_sheet_csv():
-        library = build_flavor_library()
-        headers = ["Flavor", "Nickname", "Family", "Description", "Common Beer Styles"]
-        rows = build_study_sheet_rows(library)
-        return create_csv_response("beer-study-sheet.csv", headers, rows)
-
-    @app.route("/export/troubleshooting-guide.csv")
-    def export_troubleshooting_csv():
-        library = build_flavor_library()
-        headers = ["Flavor", "Family", "Common Beer Styles", "How To Avoid"]
-        rows = build_troubleshooting_rows(library)
-        return create_csv_response("beer-troubleshooting-guide.csv", headers, rows)
 
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():
