@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="heatmap-card">
+  <h2>Style Risk Heatmap</h2>
+  <p class="small">For each beer style, these are the off-flavors most likely to appear and why they commonly show up.</p>
+
+  <div class="style-tools">
+    <label class="tool-label" for="style-search">Search beer style</label>
+    <input id="style-search" class="tool-input" type="search" placeholder="Try: Pilsner, IPA, Saison..." />
+    <p id="style-count" class="small"></p>
+  </div>
+
+  <div id="style-grid" class="style-grid">
+    {% for item in style_risks %}
+      <article class="style-block" data-style="{{ item.style|lower }}">
+        <h3>{{ item.style }}</h3>
+        <p class="small">{{ item.risk_count }} likely off-flavors mapped</p>
+        <ul class="risk-list">
+          {% for risk in item.risks %}
+            <li>
+              <div class="risk-row">
+                <span class="risk-name">{{ risk.name }} <em>({{ risk.nickname }})</em></span>
+                <span class="risk-pill {{ risk.risk_class }}">{{ risk.risk_level }} Risk</span>
+              </div>
+              <p class="risk-why"><strong>Why likely:</strong> {{ risk.why }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<script>
+  (() => {
+    const searchInput = document.getElementById("style-search");
+    const countEl = document.getElementById("style-count");
+    const blocks = Array.from(document.querySelectorAll(".style-block"));
+
+    const updateCount = (visible) => {
+      countEl.textContent = `Showing ${visible} of ${blocks.length} beer styles`;
+    };
+
+    const applyFilter = () => {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+
+      blocks.forEach((block) => {
+        const show = query.length === 0 || block.dataset.style.includes(query);
+        block.classList.toggle("is-hidden", !show);
+        if (show) visible += 1;
+      });
+
+      updateCount(visible);
+    };
+
+    searchInput.addEventListener("input", applyFilter);
+    updateCount(blocks.length);
+  })();
+</script>
+{% endblock %}

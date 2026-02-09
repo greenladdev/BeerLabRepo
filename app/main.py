@@ -82,6 +82,55 @@ def build_flavor_library() -> list[dict]:
     return library
 
 
+def build_style_risk_heatmap() -> list[dict]:
+    """Aggregate likely off-flavors per style with weighted risk intensity."""
+    style_map: dict[str, dict[str, dict]] = {}
+
+    for flavor in build_flavor_library():
+        for idx, style in enumerate(flavor["common_styles"]):
+            base_score = max(1, 3 - idx)
+            style_bucket = style_map.setdefault(style, {})
+            entry = style_bucket.get(flavor["name"])
+
+            if not entry:
+                style_bucket[flavor["name"]] = {
+                    "name": flavor["name"],
+                    "nickname": flavor["nickname"],
+                    "family": flavor["family"],
+                    "score": base_score,
+                    "why": flavor["description"],
+                }
+            else:
+                entry["score"] += base_score
+
+    heatmap = []
+    for style, entries_map in style_map.items():
+        risks = sorted(
+            entries_map.values(),
+            key=lambda item: (-item["score"], item["name"]),
+        )
+
+        if not risks:
+            continue
+
+        max_score = risks[0]["score"]
+        for risk in risks:
+            ratio = risk["score"] / max_score if max_score else 0
+            if ratio >= 0.67:
+                risk["risk_level"] = "High"
+                risk["risk_class"] = "risk-high"
+            elif ratio >= 0.34:
+                risk["risk_level"] = "Medium"
+                risk["risk_class"] = "risk-medium"
+            else:
+                risk["risk_level"] = "Low"
+                risk["risk_class"] = "risk-low"
+
+        heatmap.append({"style": style, "risks": risks, "risk_count": len(risks)})
+
+    return sorted(heatmap, key=lambda item: item["style"])
+
+
 def build_flashcards():
     """Build one quiz card per off-flavor with 3 multiple-choice options."""
     all_names = [flavor["name"] for flavor in OFF_FLAVORS]
@@ -205,6 +254,10 @@ def create_app() -> Flask:
     @app.route("/flashcards")
     def flashcards():
         return render_template("flashcards.html", cards=build_flashcards())
+
+    @app.route("/style-risk")
+    def style_risk():
+        return render_template("heatmap.html", style_risks=build_style_risk_heatmap())
 
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():
