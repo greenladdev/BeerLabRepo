@@ -13,9 +13,64 @@
 body {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  background: radial-gradient(circle at top, #f8dfac 0%, #d4943f 45%, #6b3c1a 100%);
   color: var(--oak);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, #f9e7a2 0%, #e8bf57 38%, #d89a2f 70%, #bf7a1d 100%);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  opacity: 0.45;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.55) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.42) 0 3px, transparent 4px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.35) 0 1.7px, transparent 3px);
+  background-size: 160px 160px, 220px 220px, 110px 110px;
+  background-position: 0 0, 50px 90px, 30px 20px;
+  animation: bubbles-rise-slow 24s linear infinite;
+}
+
+body::after {
+  opacity: 0.3;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.48) 0 2.5px, transparent 4px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.32) 0 1.5px, transparent 3px);
+  background-size: 260px 260px, 140px 140px;
+  background-position: 80px 40px, 20px 70px;
+  animation: bubbles-rise-fast 14s linear infinite;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes bubbles-rise-slow {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-180px);
+  }
+}
+
+@keyframes bubbles-rise-fast {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-280px);
+  }
 }
 
 .hero {
