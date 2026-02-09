@@ -4,6 +4,12 @@
   <h2>Off-Flavor Flashcards</h2>
   <p class="small">Read each profile and choose the correct off-flavor from three options.</p>
 
+  <div class="study-controls">
+    <button id="mode-all" type="button" class="mode-btn active">All Cards</button>
+    <button id="mode-missed" type="button" class="mode-btn">Personalized Study (Missed)</button>
+    <p id="missed-count" class="small"></p>
+  </div>
+
   <div id="quiz" class="quiz" data-total="{{ cards|length }}">
     <div class="quiz-meta">
       <p id="progress" class="small"></p>
@@ -30,7 +36,13 @@
 <script id="cards-data" type="application/json">{{ cards|tojson }}</script>
 <script>
   (() => {
+    const STORAGE_KEY = "beer_fault_missed_counts_v1";
     const cards = JSON.parse(document.getElementById("cards-data").textContent);
+
+    const allModeBtn = document.getElementById("mode-all");
+    const missedModeBtn = document.getElementById("mode-missed");
+    const missedCountEl = document.getElementById("missed-count");
+
     const progressEl = document.getElementById("progress");
     const scoreEl = document.getElementById("score");
     const titleEl = document.getElementById("card-title");
@@ -41,16 +53,94 @@
     const feedbackEl = document.getElementById("feedback");
     const nextBtn = document.getElementById("next-btn");
 
+    let missCounts = loadMissCounts();
+    let mode = "all";
+    let deck = [];
     let index = 0;
     let score = 0;
     let answered = false;
     let finished = false;
 
-    const renderCard = () => {
-      const card = cards[index];
+    function loadMissCounts() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (_err) {
+        return {};
+      }
+    }
+
+    function saveMissCounts() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(missCounts));
+    }
+
+    function shuffle(items) {
+      const arr = [...items];
+      for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function getMissedCardTotal() {
+      return Object.values(missCounts).filter((count) => Number(count) > 0).length;
+    }
+
+    function updateMissedCountLabel() {
+      missedCountEl.textContent = `Cards needing review: ${getMissedCardTotal()}`;
+    }
+
+    function getDeckForMode(currentMode) {
+      if (currentMode === "missed") {
+        const missed = cards
+          .filter((card) => Number(missCounts[card.name] || 0) > 0)
+          .sort((a, b) => (missCounts[b.name] || 0) - (missCounts[a.name] || 0));
+        return shuffle(missed);
+      }
+
+      return shuffle(cards);
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+      allModeBtn.classList.toggle("active", mode === "all");
+      missedModeBtn.classList.toggle("active", mode === "missed");
+
+      deck = getDeckForMode(mode);
+      index = 0;
+      score = 0;
       answered = false;
       finished = false;
-      progressEl.textContent = `Card ${index + 1} of ${cards.length}`;
+
+      if (!deck.length && mode === "missed") {
+        showNoMissedState();
+        return;
+      }
+
+      renderCard();
+    }
+
+    function showNoMissedState() {
+      progressEl.textContent = "Personalized Study";
+      scoreEl.textContent = "Score: 0";
+      titleEl.textContent = "No Missed Cards Yet";
+      descriptionEl.textContent = "You have no missed cards saved. Run All Cards mode first to build a personalized review set.";
+      stylesEl.textContent = "";
+      avoidanceEl.textContent = "";
+      optionsEl.innerHTML = "";
+      feedbackEl.textContent = "Switch to All Cards to continue learning.";
+      feedbackEl.className = "feedback";
+      nextBtn.textContent = "Go To All Cards";
+      nextBtn.disabled = false;
+      finished = true;
+    }
+
+    function renderCard() {
+      const card = deck[index];
+      answered = false;
+      finished = false;
+      progressEl.textContent = `Card ${index + 1} of ${deck.length} (${mode === "missed" ? "Personalized" : "All"})`;
       scoreEl.textContent = `Score: ${score}`;
       titleEl.textContent = `Identify: ${card.nickname}`;
       descriptionEl.textContent = card.description;
@@ -58,7 +148,7 @@
       avoidanceEl.textContent = card.avoidance;
       feedbackEl.textContent = "";
       nextBtn.disabled = true;
-      nextBtn.textContent = index === cards.length - 1 ? "See Results" : "Next Card";
+      nextBtn.textContent = index === deck.length - 1 ? "See Results" : "Next Card";
 
       optionsEl.innerHTML = "";
       card.options.forEach((option) => {
@@ -69,9 +159,9 @@
         button.addEventListener("click", () => handleAnswer(button, option, card));
         optionsEl.appendChild(button);
       });
-    };
+    }
 
-    const handleAnswer = (button, option, card) => {
+    function handleAnswer(button, option, card) {
       if (answered) return;
       answered = true;
       const isCorrect = option === card.name;
@@ -88,42 +178,65 @@
         button.classList.add("correct");
         feedbackEl.textContent = "Correct.";
         feedbackEl.className = "feedback ok";
+
+        if (Number(missCounts[card.name] || 0) > 0) {
+          missCounts[card.name] -= 1;
+          if (missCounts[card.name] <= 0) {
+            delete missCounts[card.name];
+          }
+        }
       } else {
         button.classList.add("wrong");
         feedbackEl.textContent = `Not quite. Correct answer: ${card.name}.`;
         feedbackEl.className = "feedback bad";
+        missCounts[card.name] = Number(missCounts[card.name] || 0) + 1;
       }
 
+      saveMissCounts();
+      updateMissedCountLabel();
       scoreEl.textContent = `Score: ${score}`;
       nextBtn.disabled = false;
-    };
+    }
+
+    function showCompleteState() {
+      titleEl.textContent = "Session Complete";
+      descriptionEl.textContent = `You matched ${score} out of ${deck.length} profiles in ${mode === "missed" ? "Personalized Study" : "All Cards"} mode.`;
+      stylesEl.textContent = "";
+      avoidanceEl.textContent = "";
+      optionsEl.innerHTML = "";
+      feedbackEl.textContent = `Cards still needing review: ${getMissedCardTotal()}.`;
+      feedbackEl.className = "feedback";
+      progressEl.textContent = "Finished";
+      nextBtn.textContent = "Restart Current Mode";
+      nextBtn.disabled = false;
+      finished = true;
+    }
 
     nextBtn.addEventListener("click", () => {
-      if (finished) {
-        window.location.reload();
+      if (finished && mode === "missed" && !deck.length) {
+        setMode("all");
         return;
       }
 
-      if (index < cards.length - 1) {
+      if (finished) {
+        setMode(mode);
+        return;
+      }
+
+      if (index < deck.length - 1) {
         index += 1;
         renderCard();
         return;
       }
 
-      titleEl.textContent = "Session Complete";
-      descriptionEl.textContent = `You matched ${score} out of ${cards.length} off-flavor profiles.`;
-      stylesEl.textContent = "";
-      avoidanceEl.textContent = "";
-      optionsEl.innerHTML = "";
-      feedbackEl.textContent = "Use the button below to run all 50 cards again with new answer mixes.";
-      feedbackEl.className = "feedback";
-      progressEl.textContent = "Finished";
-      nextBtn.textContent = "Restart Flashcards";
-      nextBtn.disabled = false;
-      finished = true;
+      showCompleteState();
     });
 
-    renderCard();
+    allModeBtn.addEventListener("click", () => setMode("all"));
+    missedModeBtn.addEventListener("click", () => setMode("missed"));
+
+    updateMissedCountLabel();
+    setMode("all");
   })();
 </script>
 {% endblock %}

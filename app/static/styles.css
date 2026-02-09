@@ -344,3 +344,31 @@ body > * {
 .site-footer p {
   margin: 0;
 }
+
+.study-controls {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.mode-btn {
+  border: 1px solid rgba(58, 35, 19, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--oak);
+  font-weight: 600;
+  padding: 0.42rem 0.78rem;
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  background: var(--malt);
+  color: #fff;
+  border-color: var(--malt);
+}
+
+#missed-count {
+  margin: 0;
+}
