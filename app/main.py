@@ -7,13 +7,13 @@ from app.data import OFF_FLAVORS, get_flavor_by_slug
 
 
 def build_flashcards():
-    """Build one quiz card per off-flavor with 5 multiple-choice options."""
+    """Build one quiz card per off-flavor with 3 multiple-choice options."""
     all_names = [flavor["name"] for flavor in OFF_FLAVORS]
     cards = []
 
     for flavor in OFF_FLAVORS:
         distractors = [name for name in all_names if name != flavor["name"]]
-        options = random.sample(distractors, 4) + [flavor["name"]]
+        options = random.sample(distractors, 2) + [flavor["name"]]
         random.shuffle(options)
         cards.append(
             {
