@@ -19,6 +19,17 @@
     <p id="results-count" class="small"></p>
   </div>
 
+  <div class="export-tools">
+    <h3>Export & Share Tools</h3>
+    <p class="small">Download study sheets or troubleshooting guides in CSV or PDF.</p>
+    <div class="export-links">
+      <a href="{{ url_for('export_study_sheet_csv') }}">Study Sheet (CSV)</a>
+      <a href="{{ url_for('export_study_sheet_pdf') }}">Study Sheet (PDF)</a>
+      <a href="{{ url_for('export_troubleshooting_csv') }}">Troubleshooting Guide (CSV)</a>
+      <a href="{{ url_for('export_troubleshooting_pdf') }}">Troubleshooting Guide (PDF)</a>
+    </div>
+  </div>
+
   <p><a class="quiz-link" href="{{ url_for('flashcards') }}">Start 50-card learning quiz</a></p>
 
   <ul id="flavor-list" class="flavor-list">
