@@ -639,3 +639,20 @@ body > * {
     grid-template-columns: 1fr 1.2fr;
   }
 }
+
+.meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.meta-chip {
+  border: 1px solid rgba(58, 35, 19, 0.25);
+  background: #fff9eb;
+  border-radius: 999px;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #5f3a1d;
+}

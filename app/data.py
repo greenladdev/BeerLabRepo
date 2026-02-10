@@ -404,6 +404,119 @@ OFF_FLAVORS = [
 ]
 
 
+FAMILY_RULES = {
+    "sulfur": ("sulfur", "sulphur", "dms", "mercaptan", "rotten egg", "skunky", "matchstick"),
+    "oxidation": ("oxidation", "oxidized", "papery", "cardboard", "stale", "trans-2-nonenal", "sherry"),
+    "ester": ("ester", "isoamyl", "ethyl", "banana", "pear", "fruity", "overripe"),
+}
+
+STAGE_RULES = {
+    "mash_boil": ("boil", "wort", "sparge", "mash", "kettle", "chill", "flameout", "hot-side"),
+    "fermentation": ("fermentation", "yeast", "attenuation", "pitch", "conditioning", "lagering", "diacetyl"),
+    "packaging": ("package", "packaging", "bottle", "keg", "shelf", "light", "oxygen", "transfer"),
+}
+
+FAMILY_CAUSES = {
+    "sulfur": [
+        "Yeast stress, nutrient imbalance, or insufficient conditioning time",
+        "Cold-side contamination in sulfur-prone processes",
+        "Poor venting/conditioning before packaging",
+    ],
+    "oxidation": [
+        "Excess oxygen pickup during transfers or packaging",
+        "Warm storage and extended shelf time",
+        "Insufficient CO2 purging of vessels and packages",
+    ],
+    "ester": [
+        "Warm fermentation and yeast stress",
+        "Underpitching or insufficient oxygen at pitch",
+        "Strain/style mismatch for intended flavor balance",
+    ],
+    "other": [
+        "Process control drift (temperature, pH, timing)",
+        "Ingredient freshness and handling issues",
+        "Inconsistent sanitation or cleaning residue",
+    ],
+}
+
+STAGE_CHECKS = {
+    "mash_boil": [
+        "Review mash/sparge pH and run-off limits",
+        "Confirm vigorous uncovered boil and rapid chilling",
+        "Check hot-side contact surfaces for scorching",
+    ],
+    "fermentation": [
+        "Verify pitch rate, oxygenation, and yeast vitality",
+        "Audit fermentation temperature profile",
+        "Confirm terminal gravity and maturation completion",
+    ],
+    "packaging": [
+        "Measure dissolved oxygen at packaging",
+        "Verify CO2 purging and closed-transfer integrity",
+        "Check light exposure and storage temperatures",
+    ],
+}
+
+SEVERITY_HINTS = {
+    "high": ("vomit", "fecal", "band-aid", "medicinal", "burnt plastic", "rancid", "sewage"),
+    "medium": ("papery", "skunky", "buttery", "sulfur", "astringent", "harsh", "solvent"),
+}
+
+
+def _infer_family(text: str) -> str:
+    for family, keywords in FAMILY_RULES.items():
+        if any(keyword in text for keyword in keywords):
+            return family
+    return "other"
+
+
+def _infer_stage(text: str, family: str) -> str:
+    scores = {stage: sum(1 for keyword in keywords if keyword in text) for stage, keywords in STAGE_RULES.items()}
+    stage = max(scores, key=lambda key: scores[key])
+    if scores[stage] > 0:
+        return stage
+    if family == "oxidation":
+        return "packaging"
+    if family in {"sulfur", "ester"}:
+        return "fermentation"
+    return "mash_boil"
+
+
+def _infer_severity(text: str) -> str:
+    if any(keyword in text for keyword in SEVERITY_HINTS["high"]):
+        return "High"
+    if any(keyword in text for keyword in SEVERITY_HINTS["medium"]):
+        return "Medium"
+    return "Low to Medium"
+
+
+def _enrich_flavor(flavor: dict) -> dict:
+    text = " ".join([
+        flavor["name"],
+        flavor["nickname"],
+        flavor["description"],
+        flavor["avoidance"],
+        " ".join(flavor["common_styles"]),
+    ]).lower()
+
+    family = _infer_family(text)
+    stage = _infer_stage(text, family)
+
+    flavor["family"] = family
+    flavor["primary_stage"] = stage
+    flavor["severity"] = _infer_severity(text)
+    flavor["likely_causes"] = FAMILY_CAUSES[family]
+    flavor["diagnostic_checks"] = STAGE_CHECKS[stage]
+    flavor["qa_focus"] = [
+        f"Track this fault in style flights where {', '.join(flavor['common_styles'][:2])} are benchmarked",
+        "Record occurrence against batch date, fermentation profile, and package DO",
+    ]
+    return flavor
+
+
+OFF_FLAVORS = [_enrich_flavor(item) for item in OFF_FLAVORS]
+
+
 def get_flavor_by_slug(slug: str):
-    """Return a single flavor dictionary by slug."""
+    """Return a single enriched flavor dictionary by slug."""
     return next((item for item in OFF_FLAVORS if item["slug"] == slug), None)

@@ -5,6 +5,12 @@
   <h2>{{ flavor.name }} <small>({{ flavor.nickname }})</small></h2>
   <p class="description">{{ flavor.description }}</p>
 
+  <div class="meta-chips">
+    <span class="meta-chip">Family: {{ flavor.family|title }}</span>
+    <span class="meta-chip">Primary Stage: {{ flavor.primary_stage.replace('_', ' ')|title }}</span>
+    <span class="meta-chip">Severity: {{ flavor.severity }}</span>
+  </div>
+
   <section>
     <h3>Most Commonly Found In</h3>
     <ul>
@@ -15,8 +21,35 @@
   </section>
 
   <section>
+    <h3>Likely Root Causes</h3>
+    <ul>
+      {% for cause in flavor.likely_causes %}
+        <li>{{ cause }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <h3>Diagnostic Checks To Run</h3>
+    <ul>
+      {% for check in flavor.diagnostic_checks %}
+        <li>{{ check }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
     <h3>How Brewers Can Avoid It</h3>
     <p>{{ flavor.avoidance }}</p>
+  </section>
+
+  <section>
+    <h3>QA Tracking Focus</h3>
+    <ul>
+      {% for note in flavor.qa_focus %}
+        <li>{{ note }}</li>
+      {% endfor %}
+    </ul>
   </section>
 </article>
 {% endblock %}
