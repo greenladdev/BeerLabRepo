@@ -39,6 +39,61 @@ ESTER_KEYWORDS = (
     "fruity",
 )
 
+STAGE_KEYWORDS = {
+    "mash_boil": (
+        "boil",
+        "wort",
+        "sparge",
+        "mash",
+        "kettle",
+        "hot-side",
+        "chill",
+        "flameout",
+    ),
+    "fermentation": (
+        "fermentation",
+        "yeast",
+        "lagering",
+        "conditioning",
+        "diacetyl rest",
+        "attenuation",
+        "pitch",
+    ),
+    "packaging": (
+        "packaging",
+        "bottle",
+        "keg",
+        "light",
+        "oxygen",
+        "transfer",
+        "shelf",
+        "distribution",
+    ),
+}
+
+SYMPTOM_TAG_KEYWORDS = {
+    "sulfur_egg": ("sulfur", "rotten egg", "matchstick"),
+    "buttery": ("butter", "butterscotch", "diacetyl"),
+    "green_apple": ("green apple", "acetaldehyde"),
+    "vinegar_sour": ("vinegar", "acetic", "lactic", "sour"),
+    "solventy_fruity": ("solvent", "fruity", "banana", "pear", "ester"),
+    "papery_stale": ("papery", "cardboard", "stale", "oxidation"),
+    "skunky_light": ("skunky", "lightstruck", "uv light", "light damage"),
+    "smoky_phenolic": ("smoky", "phenolic", "medicinal", "band-aid"),
+    "astringent_harsh": ("astringent", "tannic", "harsh", "rough hop"),
+}
+
+PROCESS_TAG_KEYWORDS = {
+    "warm_fermentation": ("high fermentation temperature", "warm", "temperature"),
+    "yeast_stress": ("stressed yeast", "underpitch", "pitch", "yeast health"),
+    "oxygen_pickup": ("oxygen", "oxidation", "post-fermentation", "transfer"),
+    "sanitation": ("sanitize", "contamination", "bacteria", "wild yeast"),
+    "light_exposure": ("light", "uv", "sunlight", "fluorescent"),
+    "old_hops": ("aged hops", "old hops", "stale hops"),
+    "water_chlorine": ("chlorine", "chloramine", "campden"),
+    "sparge_extraction": ("sparge", "oversparging", "high ph", "extraction"),
+}
+
 
 def infer_flavor_family(flavor: dict) -> str:
     """Classify a flavor into one of the filter families used by the UI."""
@@ -80,6 +135,65 @@ def build_flavor_library() -> list[dict]:
         library.append(enriched)
 
     return library
+
+
+def infer_primary_stage(text: str, family: str) -> str:
+    """Infer primary process stage where the fault is typically introduced/noticed."""
+    scores = {
+        stage: sum(1 for keyword in keywords if keyword in text)
+        for stage, keywords in STAGE_KEYWORDS.items()
+    }
+
+    best_stage = max(scores, key=lambda stage: scores[stage])
+    if scores[best_stage] > 0:
+        return best_stage
+
+    if family == "oxidation":
+        return "packaging"
+    if family in {"sulfur", "ester"}:
+        return "fermentation"
+    return "mash_boil"
+
+
+def extract_tags(text: str, tag_map: dict[str, tuple[str, ...]]) -> list[str]:
+    """Return matching tags from keyword map."""
+    tags = []
+    for tag, keywords in tag_map.items():
+        if any(keyword in text for keyword in keywords):
+            tags.append(tag)
+    return tags
+
+
+def build_diagnosis_profiles() -> list[dict]:
+    """Profiles used by the process-stage diagnosis wizard scoring engine."""
+    profiles = []
+    for flavor in build_flavor_library():
+        text = " ".join(
+            [
+                flavor["name"],
+                flavor["nickname"],
+                flavor["description"],
+                flavor["avoidance"],
+                " ".join(flavor["common_styles"]),
+            ]
+        ).lower()
+
+        profiles.append(
+            {
+                "slug": flavor["slug"],
+                "name": flavor["name"],
+                "nickname": flavor["nickname"],
+                "family": flavor["family"],
+                "stage": infer_primary_stage(text, flavor["family"]),
+                "symptom_tags": extract_tags(text, SYMPTOM_TAG_KEYWORDS),
+                "process_tags": extract_tags(text, PROCESS_TAG_KEYWORDS),
+                "common_styles": flavor["common_styles"],
+                "why": flavor["description"],
+                "avoidance": flavor["avoidance"],
+            }
+        )
+
+    return profiles
 
 
 def build_style_risk_heatmap() -> list[dict]:
@@ -258,6 +372,10 @@ def create_app() -> Flask:
     @app.route("/style-risk")
     def style_risk():
         return render_template("heatmap.html", style_risks=build_style_risk_heatmap())
+
+    @app.route("/diagnosis-wizard")
+    def diagnosis_wizard():
+        return render_template("diagnosis.html", profiles=build_diagnosis_profiles())
 
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():

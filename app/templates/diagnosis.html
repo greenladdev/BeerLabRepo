@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="wizard-card">
+  <h2>Process-Stage Diagnosis Wizard</h2>
+  <p class="small">Answer a few process and sensory questions to surface likely off-flavors and targeted prevention steps.</p>
+
+  <div class="wizard-grid">
+    <div class="wizard-panel">
+      <label class="tool-label" for="stage-select">Where did you first notice the issue?</label>
+      <select id="stage-select" class="tool-select">
+        <option value="unknown">Not sure yet</option>
+        <option value="mash_boil">Mash / Boil</option>
+        <option value="fermentation">Fermentation / Conditioning</option>
+        <option value="packaging">Packaging / Serving</option>
+      </select>
+
+      <p class="tool-label">Dominant sensory signs</p>
+      <div id="symptom-group" class="chip-group"></div>
+
+      <p class="tool-label">Process conditions observed</p>
+      <div id="process-group" class="chip-group"></div>
+
+      <label class="tool-label" for="style-input">Beer style (optional)</label>
+      <input id="style-input" class="tool-input" type="search" placeholder="e.g. Pilsner, IPA, Saison" />
+
+      <div class="wizard-actions">
+        <button id="run-diagnosis" type="button" class="next-btn">Run Diagnosis</button>
+        <button id="reset-diagnosis" type="button" class="mode-btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="wizard-results">
+      <p id="diagnosis-meta" class="small"></p>
+      <div id="diagnosis-list" class="diagnosis-list"></div>
+    </div>
+  </div>
+</section>
+
+<script id="diagnosis-profiles" type="application/json">{{ profiles|tojson }}</script>
+<script>
+  (() => {
+    const profiles = JSON.parse(document.getElementById("diagnosis-profiles").textContent);
+
+    const symptomOptions = [
+      { id: "sulfur_egg", label: "Sulfur / Rotten Egg" },
+      { id: "buttery", label: "Buttery" },
+      { id: "green_apple", label: "Green Apple" },
+      { id: "vinegar_sour", label: "Vinegar / Sour" },
+      { id: "solventy_fruity", label: "Solventy / Fruity" },
+      { id: "papery_stale", label: "Papery / Stale" },
+      { id: "skunky_light", label: "Skunky / Lightstruck" },
+      { id: "smoky_phenolic", label: "Smoky / Phenolic" },
+      { id: "astringent_harsh", label: "Astringent / Harsh" },
+    ];
+
+    const processOptions = [
+      { id: "warm_fermentation", label: "Warm Fermentation" },
+      { id: "yeast_stress", label: "Yeast Stress / Underpitch" },
+      { id: "oxygen_pickup", label: "Oxygen Pickup" },
+      { id: "sanitation", label: "Sanitation Issue" },
+      { id: "light_exposure", label: "Light Exposure" },
+      { id: "old_hops", label: "Old Hops" },
+      { id: "water_chlorine", label: "Chlorinated Water" },
+      { id: "sparge_extraction", label: "Over-sparge / High pH" },
+    ];
+
+    const stageSelect = document.getElementById("stage-select");
+    const styleInput = document.getElementById("style-input");
+    const symptomGroup = document.getElementById("symptom-group");
+    const processGroup = document.getElementById("process-group");
+    const runBtn = document.getElementById("run-diagnosis");
+    const resetBtn = document.getElementById("reset-diagnosis");
+    const diagnosisMeta = document.getElementById("diagnosis-meta");
+    const diagnosisList = document.getElementById("diagnosis-list");
+
+    function buildChips(groupEl, options, prefix) {
+      groupEl.innerHTML = "";
+      options.forEach((option) => {
+        const id = `${prefix}-${option.id}`;
+        const wrapper = document.createElement("label");
+        wrapper.className = "chip";
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = option.id;
+        input.id = id;
+
+        const span = document.createElement("span");
+        span.textContent = option.label;
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(span);
+        groupEl.appendChild(wrapper);
+      });
+    }
+
+    function getCheckedValues(groupEl) {
+      return Array.from(groupEl.querySelectorAll("input:checked")).map((node) => node.value);
+    }
+
+    function scoreProfiles() {
+      const stage = stageSelect.value;
+      const symptoms = getCheckedValues(symptomGroup);
+      const processTags = getCheckedValues(processGroup);
+      const styleQuery = styleInput.value.trim().toLowerCase();
+
+      const scored = profiles
+        .map((profile) => {
+          let score = 0;
+          const reasons = [];
+
+          if (stage !== "unknown" && profile.stage === stage) {
+            score += 3;
+            reasons.push("Stage match");
+          }
+
+          const symptomHits = symptoms.filter((tag) => profile.symptom_tags.includes(tag));
+          if (symptomHits.length) {
+            score += symptomHits.length * 2;
+            reasons.push(`Symptom hits: ${symptomHits.length}`);
+          }
+
+          const processHits = processTags.filter((tag) => profile.process_tags.includes(tag));
+          if (processHits.length) {
+            score += processHits.length * 2;
+            reasons.push(`Process matches: ${processHits.length}`);
+          }
+
+          if (styleQuery.length > 0) {
+            const styleMatch = profile.common_styles.some((style) => style.toLowerCase().includes(styleQuery));
+            if (styleMatch) {
+              score += 2;
+              reasons.push("Style match");
+            }
+          }
+
+          return { ...profile, score, reasons };
+        })
+        .filter((profile) => profile.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
+
+      return scored;
+    }
+
+    function renderResults(results) {
+      diagnosisList.innerHTML = "";
+
+      if (!results.length) {
+        diagnosisMeta.textContent = "No confident matches yet. Add more symptoms or process clues and run diagnosis again.";
+        return;
+      }
+
+      diagnosisMeta.textContent = `Top ${results.length} likely off-flavors based on your inputs.`;
+
+      results.forEach((item, idx) => {
+        const card = document.createElement("article");
+        card.className = "diagnosis-item";
+
+        const title = document.createElement("h3");
+        title.innerHTML = `${idx + 1}. ${item.name} <small>(${item.nickname})</small>`;
+
+        const score = document.createElement("p");
+        score.className = "small";
+        score.textContent = `Match score: ${item.score} • ${item.reasons.join(" • ")}`;
+
+        const why = document.createElement("p");
+        why.className = "risk-why";
+        why.innerHTML = `<strong>Why it fits:</strong> ${item.why}`;
+
+        const styles = document.createElement("p");
+        styles.className = "risk-why";
+        styles.innerHTML = `<strong>Common styles:</strong> ${item.common_styles.join(", ")}`;
+
+        const avoid = document.createElement("p");
+        avoid.className = "risk-why";
+        avoid.innerHTML = `<strong>Prevent next time:</strong> ${item.avoidance}`;
+
+        const link = document.createElement("a");
+        link.className = "ghost-link";
+        link.href = `/flavor/${item.slug}`;
+        link.textContent = "Open full off-flavor profile";
+
+        card.appendChild(title);
+        card.appendChild(score);
+        card.appendChild(why);
+        card.appendChild(styles);
+        card.appendChild(avoid);
+        card.appendChild(link);
+        diagnosisList.appendChild(card);
+      });
+    }
+
+    runBtn.addEventListener("click", () => {
+      renderResults(scoreProfiles());
+    });
+
+    resetBtn.addEventListener("click", () => {
+      stageSelect.value = "unknown";
+      styleInput.value = "";
+      symptomGroup.querySelectorAll("input").forEach((node) => {
+        node.checked = false;
+      });
+      processGroup.querySelectorAll("input").forEach((node) => {
+        node.checked = false;
+      });
+      diagnosisMeta.textContent = "Answer questions and click Run Diagnosis to see likely faults.";
+      diagnosisList.innerHTML = "";
+    });
+
+    buildChips(symptomGroup, symptomOptions, "symptom");
+    buildChips(processGroup, processOptions, "process");
+    diagnosisMeta.textContent = "Answer questions and click Run Diagnosis to see likely faults.";
+  })();
+</script>
+{% endblock %}

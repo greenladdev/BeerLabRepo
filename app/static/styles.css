@@ -551,3 +551,91 @@ body > * {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
 }
+
+.wizard-card {
+  background: rgba(255, 246, 223, 0.95);
+  border-radius: 14px;
+  border: 1px solid rgba(58, 35, 19, 0.35);
+  padding: 1.2rem;
+  box-shadow: 0 8px 16px rgba(20, 9, 4, 0.2);
+}
+
+.wizard-grid {
+  margin-top: 0.8rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+}
+
+.wizard-panel,
+.wizard-results {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(58, 35, 19, 0.2);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.7rem;
+}
+
+.chip {
+  position: relative;
+  border: 1px solid rgba(58, 35, 19, 0.25);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--oak);
+  padding: 0.25rem 0.65rem;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chip:has(input:checked) {
+  background: var(--malt);
+  color: #fff;
+  border-color: var(--malt);
+}
+
+.wizard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.4rem;
+}
+
+.diagnosis-list {
+  margin-top: 0.6rem;
+  display: grid;
+  gap: 0.62rem;
+}
+
+.diagnosis-item {
+  background: #fff;
+  border: 1px solid rgba(58, 35, 19, 0.2);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.diagnosis-item h3 {
+  margin: 0;
+}
+
+.diagnosis-item h3 small {
+  font-weight: 500;
+  color: #6c4625;
+}
+
+@media (min-width: 950px) {
+  .wizard-grid {
+    grid-template-columns: 1fr 1.2fr;
+  }
+}
