@@ -278,8 +278,12 @@ def build_study_sheet_rows(library: list[dict]) -> list[list[str]]:
                 flavor["name"],
                 flavor["nickname"],
                 flavor["family"].title(),
+                flavor["primary_stage"].replace("_", " ").title(),
+                flavor["severity"],
                 flavor["description"],
                 ", ".join(flavor["common_styles"]),
+                ", ".join(flavor["likely_causes"]),
+                ", ".join(flavor["qa_focus"]),
             ]
         )
     return rows
@@ -293,8 +297,13 @@ def build_troubleshooting_rows(library: list[dict]) -> list[list[str]]:
             [
                 flavor["name"],
                 flavor["family"].title(),
+                flavor["primary_stage"].replace("_", " ").title(),
+                flavor["severity"],
                 ", ".join(flavor["common_styles"]),
+                ", ".join(flavor["likely_causes"]),
+                ", ".join(flavor["diagnostic_checks"]),
                 flavor["avoidance"],
+                ", ".join(flavor["qa_focus"]),
             ]
         )
     return rows
@@ -380,7 +389,17 @@ def create_app() -> Flask:
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():
         library = build_flavor_library()
-        headers = ["Flavor", "Nickname", "Family", "Description", "Common Beer Styles"]
+        headers = [
+            "Flavor",
+            "Nickname",
+            "Family",
+            "Primary Stage",
+            "Severity",
+            "Description",
+            "Common Beer Styles",
+            "Likely Causes",
+            "QA Focus",
+        ]
         rows = build_study_sheet_rows(library)
         return create_pdf_response(
             "Beer Study Sheet",
@@ -392,7 +411,17 @@ def create_app() -> Flask:
     @app.route("/export/troubleshooting-guide.pdf")
     def export_troubleshooting_pdf():
         library = build_flavor_library()
-        headers = ["Flavor", "Family", "Common Beer Styles", "How To Avoid"]
+        headers = [
+            "Flavor",
+            "Family",
+            "Primary Stage",
+            "Severity",
+            "Common Beer Styles",
+            "Likely Causes",
+            "Diagnostic Checks",
+            "How To Avoid",
+            "QA Focus",
+        ]
         rows = build_troubleshooting_rows(library)
         return create_pdf_response(
             "Beer Troubleshooting Guide",
