@@ -16,7 +16,10 @@
     <p id="results-count" class="small"></p>
   </div>
 
-  <p><a class="quiz-link" href="{{ url_for('flashcards') }}">Start 50-card learning quiz</a></p>
+  <div class="home-quick-links">
+    <a class="quiz-link" href="{{ url_for('flashcards') }}">Start 50-card learning quiz</a>
+    <a class="quiz-link" href="{{ url_for('sensory_training') }}">Open sensory calibration training</a>
+  </div>
 
   <ul id="flavor-list" class="flavor-list">
     {% for flavor in flavors %}

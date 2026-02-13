@@ -386,6 +386,10 @@ def create_app() -> Flask:
     def diagnosis_wizard():
         return render_template("diagnosis.html", profiles=build_diagnosis_profiles())
 
+    @app.route("/sensory-training")
+    def sensory_training():
+        return render_template("sensory.html", flavors=build_flavor_library())
+
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():
         library = build_flavor_library()

@@ -656,3 +656,93 @@ body > * {
   font-weight: 700;
   color: #5f3a1d;
 }
+
+.home-quick-links {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.sensory-card {
+  background: rgba(255, 246, 223, 0.95);
+  border-radius: 14px;
+  border: 1px solid rgba(58, 35, 19, 0.35);
+  padding: 1.2rem;
+  box-shadow: 0 8px 16px rgba(20, 9, 4, 0.2);
+}
+
+.sensory-grid {
+  margin-top: 0.85rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+}
+
+.sensory-panel {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(58, 35, 19, 0.2);
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.sensory-panel h3 {
+  margin-top: 0;
+}
+
+.triangle-controls,
+.triangle-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+}
+
+.triangle-btn {
+  border: 1px solid rgba(58, 35, 19, 0.25);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--oak);
+  font-weight: 700;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.triangle-btn.active {
+  border-color: var(--malt);
+  background: #fff1cd;
+}
+
+.cue {
+  margin-top: 0.45rem;
+  font-weight: 600;
+}
+
+.scorecard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.scorecard-grid h4 {
+  margin: 0.2rem 0;
+}
+
+.scorecard-grid ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+@media (min-width: 860px) {
+  .sensory-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sensory-panel-wide {
+    grid-column: 1 / -1;
+  }
+
+  .scorecard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

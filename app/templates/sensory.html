@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="sensory-card">
+  <h2>Sensory Calibration Training</h2>
+  <p class="small">Train your palate using triangle tests, threshold recognition drills, and a printable tasting scorecard workflow.</p>
+
+  <div class="sensory-grid">
+    <article class="sensory-panel">
+      <h3>Triangle Test Simulator</h3>
+      <p class="small">Two cups are the same and one is different. Pick the odd sample before revealing.</p>
+      <div class="triangle-controls">
+        <button id="triangle-new" class="next-btn" type="button">Deal New Triangle</button>
+        <button id="triangle-reveal" class="mode-btn" type="button">Reveal Answer</button>
+      </div>
+      <div class="triangle-buttons">
+        <button class="triangle-btn" data-sample="A" type="button">Sample A</button>
+        <button class="triangle-btn" data-sample="B" type="button">Sample B</button>
+        <button class="triangle-btn" data-sample="C" type="button">Sample C</button>
+      </div>
+      <p id="triangle-feedback" class="feedback"></p>
+    </article>
+
+    <article class="sensory-panel">
+      <h3>Threshold Recognition Drill</h3>
+      <p class="small">Read the sensory cue and choose the most likely off-flavor.</p>
+      <p id="threshold-cue" class="cue"></p>
+      <div id="threshold-options" class="options"></div>
+      <div class="quiz-actions">
+        <button id="threshold-next" class="next-btn" type="button">Next Cue</button>
+      </div>
+      <p id="threshold-feedback" class="feedback"></p>
+    </article>
+
+    <article class="sensory-panel sensory-panel-wide">
+      <h3>Tasting Scorecard Template</h3>
+      <p class="small">Use this quick structure during calibration sessions to standardize notes.</p>
+      <div class="scorecard-grid">
+        <div>
+          <h4>Session Setup</h4>
+          <ul>
+            <li>Style / Batch:</li>
+            <li>Serving Temp:</li>
+            <li>Glassware:</li>
+            <li>Date / Time:</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Sensory Checklist</h4>
+          <ul>
+            <li>Aroma intensity (Low / Med / High)</li>
+            <li>Primary descriptor(s)</li>
+            <li>Flavor onset + finish</li>
+            <li>Mouthfeel + carbonation impression</li>
+            <li>Aftertaste persistence</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Fault Scoring</h4>
+          <ul>
+            <li>Suspected fault:</li>
+            <li>Confidence (1-5):</li>
+            <li>Most likely process stage:</li>
+            <li>Immediate corrective action:</li>
+          </ul>
+        </div>
+      </div>
+      <div class="quiz-actions">
+        <button id="print-scorecard" class="mode-btn" type="button">Print Scorecard</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const flavors = {{ flavors|tojson }};
+
+    const triangleButtons = Array.from(document.querySelectorAll(".triangle-btn"));
+    const triangleFeedback = document.getElementById("triangle-feedback");
+    const triangleNewBtn = document.getElementById("triangle-new");
+    const triangleRevealBtn = document.getElementById("triangle-reveal");
+    let oddSample = "A";
+
+    const newTriangle = () => {
+      oddSample = ["A", "B", "C"][Math.floor(Math.random() * 3)];
+      triangleFeedback.textContent = "New set ready. Choose the odd sample.";
+      triangleFeedback.className = "feedback";
+      triangleButtons.forEach((btn) => btn.classList.remove("active"));
+    };
+
+    triangleButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const selected = btn.dataset.sample;
+        triangleButtons.forEach((node) => node.classList.remove("active"));
+        btn.classList.add("active");
+
+        if (selected === oddSample) {
+          triangleFeedback.textContent = `Correct. Sample ${selected} is the odd one.`;
+          triangleFeedback.className = "feedback ok";
+        } else {
+          triangleFeedback.textContent = `Not quite. Sample ${selected} is not the odd one.`;
+          triangleFeedback.className = "feedback bad";
+        }
+      });
+    });
+
+    triangleNewBtn.addEventListener("click", newTriangle);
+    triangleRevealBtn.addEventListener("click", () => {
+      triangleFeedback.textContent = `Answer revealed: sample ${oddSample} is different.`;
+      triangleFeedback.className = "feedback";
+    });
+
+    const thresholdCue = document.getElementById("threshold-cue");
+    const thresholdOptions = document.getElementById("threshold-options");
+    const thresholdFeedback = document.getElementById("threshold-feedback");
+    const thresholdNext = document.getElementById("threshold-next");
+
+    const cuePool = flavors.map((flavor) => ({
+      answer: flavor.name,
+      cue: `${flavor.nickname}: ${flavor.description}`,
+    }));
+
+    let current = null;
+
+    const makeOptions = (answer) => {
+      const distractors = flavors
+        .map((item) => item.name)
+        .filter((name) => name !== answer)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      return [...distractors, answer].sort(() => Math.random() - 0.5);
+    };
+
+    const nextCue = () => {
+      current = cuePool[Math.floor(Math.random() * cuePool.length)];
+      thresholdCue.textContent = current.cue;
+      thresholdFeedback.textContent = "";
+      thresholdFeedback.className = "feedback";
+      thresholdOptions.innerHTML = "";
+
+      makeOptions(current.answer).forEach((label) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option-btn";
+        button.textContent = label;
+
+        button.addEventListener("click", () => {
+          const buttons = thresholdOptions.querySelectorAll("button");
+          buttons.forEach((node) => (node.disabled = true));
+
+          if (label === current.answer) {
+            button.classList.add("correct");
+            thresholdFeedback.textContent = "Correct match.";
+            thresholdFeedback.className = "feedback ok";
+          } else {
+            button.classList.add("wrong");
+            buttons.forEach((node) => {
+              if (node.textContent === current.answer) {
+                node.classList.add("correct");
+              }
+            });
+            thresholdFeedback.textContent = `Best match: ${current.answer}.`;
+            thresholdFeedback.className = "feedback bad";
+          }
+        });
+
+        thresholdOptions.appendChild(button);
+      });
+    };
+
+    thresholdNext.addEventListener("click", nextCue);
+
+    document.getElementById("print-scorecard").addEventListener("click", () => {
+      window.print();
+    });
+
+    newTriangle();
+    nextCue();
+  })();
+</script>
+{% endblock %}
