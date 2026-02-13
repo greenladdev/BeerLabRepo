@@ -65,7 +65,8 @@
         </div>
       </div>
       <div class="quiz-actions">
-        <button id="print-scorecard" class="mode-btn" type="button">Print Scorecard</button>
+        <a class="quiz-link" href="{{ url_for('export_tasting_scorecard_pdf') }}">Download Tasting Scorecard (PDF)</a>
+        <button id="print-scorecard" class="mode-btn" type="button">Print Current View</button>
       </div>
     </article>
   </div>

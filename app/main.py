@@ -360,6 +360,94 @@ def create_pdf_response(
     )
 
 
+def create_tasting_scorecard_pdf(library: list[dict]):
+    """Return a printable tasting scorecard PDF using flavor-library calibration cues."""
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=LETTER)
+    width, height = LETTER
+
+    def draw_score_block(flavor: dict, top_y: float):
+        left = 36
+        right = width - 36
+        block_height = 282
+        row_top = top_y - 56
+
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(left, top_y, f"Beer Fault Finder Calibration Sheet - {flavor['name']}")
+
+        pdf.setFont("Helvetica", 9)
+        subtitle = (
+            f"Focus: {flavor['nickname']} | Family: {flavor['family'].title()} | "
+            f"Stage: {flavor['primary_stage'].replace('_', ' ').title()}"
+        )
+        pdf.drawString(left, top_y - 14, subtitle)
+
+        cue_text = textwrap.shorten(flavor["description"], width=120, placeholder="...")
+        pdf.drawString(left, top_y - 27, f"Calibration cue: {cue_text}")
+
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(left, row_top, "Beer:")
+        pdf.line(left + 34, row_top - 2, left + 280, row_top - 2)
+
+        left_col = [
+            "Appearance (10)",
+            "Smell (10)",
+            "Taste (30)",
+        ]
+        right_col = [
+            "After Taste (20)",
+            "Drinkability (30)",
+            "Total (100)",
+        ]
+
+        y = row_top - 26
+        pdf.setFont("Helvetica", 11)
+        for label in left_col:
+            pdf.drawString(left, y, label)
+            pdf.line(left + 103, y - 2, left + 138, y - 2)
+            y -= 24
+
+        y = row_top - 26
+        for label in right_col:
+            pdf.drawString(left + 150, y, label)
+            pdf.line(left + 258, y - 2, left + 293, y - 2)
+            y -= 24
+
+        comments_left = left + 302
+        comments_top = row_top - 6
+        comments_width = right - comments_left
+        comments_height = 100
+
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(comments_left, row_top, "Comments -")
+        pdf.rect(comments_left, comments_top - comments_height, comments_width, comments_height)
+
+        notes_top = comments_top - comments_height - 18
+        pdf.setFont("Helvetica", 8)
+        pdf.drawString(left, notes_top, f"Common styles: {', '.join(flavor['common_styles'][:3])}")
+        likely = textwrap.shorten(', '.join(flavor['likely_causes']), width=100, placeholder='...')
+        pdf.drawString(left, notes_top - 12, f"Likely causes: {likely}")
+
+        pdf.line(left, top_y - block_height, right, top_y - block_height)
+
+    positions = [height - 42, height - 356]
+
+    for idx, flavor in enumerate(library):
+        draw_score_block(flavor, positions[idx % 2])
+        if idx % 2 == 1 and idx != len(library) - 1:
+            pdf.showPage()
+
+    pdf.save()
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="beer-tasting-scorecard.pdf",
+        mimetype="application/pdf",
+    )
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
 
@@ -389,6 +477,10 @@ def create_app() -> Flask:
     @app.route("/sensory-training")
     def sensory_training():
         return render_template("sensory.html", flavors=build_flavor_library())
+
+    @app.route("/export/tasting-scorecard.pdf")
+    def export_tasting_scorecard_pdf():
+        return create_tasting_scorecard_pdf(build_flavor_library())
 
     @app.route("/export/study-sheet.pdf")
     def export_study_sheet_pdf():
