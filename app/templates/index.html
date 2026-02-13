@@ -5,9 +5,6 @@
   <p class="small">Select a flavor to view causes, likely style appearance, and avoidance tips.</p>
 
   <div class="library-tools">
-    <label class="tool-label" for="flavor-search">Search by keyword</label>
-    <input id="flavor-search" class="tool-input" type="search" placeholder="Try: skunky, paper, banana, sulfur..." />
-
     <label class="tool-label" for="family-filter">Filter by family</label>
     <select id="family-filter" class="tool-select">
       <option value="all">All Families</option>
@@ -23,7 +20,7 @@
 
   <ul id="flavor-list" class="flavor-list">
     {% for flavor in flavors %}
-      <li class="flavor-item" data-family="{{ flavor.family }}" data-search="{{ flavor.search_text }}">
+      <li class="flavor-item" data-family="{{ flavor.family }}">
         <a href="{{ url_for('flavor_detail', slug=flavor.slug) }}">
           <span class="name">{{ flavor.name }}</span>
           <span class="nick">{{ flavor.nickname }} · {{ flavor.family|title }}</span>
@@ -44,7 +41,6 @@
 
 <script>
   (() => {
-    const searchInput = document.getElementById("flavor-search");
     const familyFilter = document.getElementById("family-filter");
     const resultCount = document.getElementById("results-count");
     const items = Array.from(document.querySelectorAll(".flavor-item"));
@@ -54,14 +50,11 @@
     };
 
     const applyFilters = () => {
-      const query = searchInput.value.trim().toLowerCase();
       const family = familyFilter.value;
       let visible = 0;
 
       items.forEach((item) => {
-        const matchesFamily = family === "all" || item.dataset.family === family;
-        const matchesQuery = query.length === 0 || item.dataset.search.includes(query);
-        const show = matchesFamily && matchesQuery;
+        const show = family === "all" || item.dataset.family === family;
         item.classList.toggle("is-hidden", !show);
         if (show) visible += 1;
       });
@@ -69,7 +62,6 @@
       updateCount(visible);
     };
 
-    searchInput.addEventListener("input", applyFilters);
     familyFilter.addEventListener("change", applyFilters);
     updateCount(items.length);
   })();
