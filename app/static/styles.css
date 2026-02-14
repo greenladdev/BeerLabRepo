@@ -746,3 +746,28 @@ body > * {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.about-tool h2,
+.about-tool h3,
+.about-tool h4 {
+  margin-bottom: 0.4rem;
+}
+
+.about-tool hr {
+  border: 0;
+  border-top: 1px solid rgba(58, 35, 19, 0.22);
+  margin: 1rem 0;
+}
+
+.about-tool ul {
+  margin-top: 0.35rem;
+  padding-left: 1.2rem;
+}
+
+.about-tool blockquote {
+  margin: 0.8rem 0;
+  padding: 0.55rem 0.8rem;
+  border-left: 4px solid rgba(58, 35, 19, 0.35);
+  background: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}

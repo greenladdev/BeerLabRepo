@@ -455,6 +455,10 @@ def create_app() -> Flask:
     def index():
         return render_template("index.html", flavors=build_flavor_library())
 
+    @app.route("/about-tool")
+    def about_tool():
+        return render_template("about_tool.html")
+
     @app.route("/flavor/<slug>")
     def flavor_detail(slug: str):
         flavor = get_flavor_by_slug(slug)
