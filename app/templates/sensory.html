@@ -17,6 +17,9 @@
         <button class="triangle-btn" data-sample="B" type="button">Sample B</button>
         <button class="triangle-btn" data-sample="C" type="button">Sample C</button>
       </div>
+      <div id="triangle-sample-info" class="triangle-info">
+        <p class="small">Select Sample A, B, or C to view that sample profile information.</p>
+      </div>
       <p id="triangle-feedback" class="feedback"></p>
     </article>
 
@@ -98,15 +101,75 @@
 
     const triangleButtons = Array.from(document.querySelectorAll(".triangle-btn"));
     const triangleFeedback = document.getElementById("triangle-feedback");
+    const triangleInfo = document.getElementById("triangle-sample-info");
     const triangleNewBtn = document.getElementById("triangle-new");
     const triangleRevealBtn = document.getElementById("triangle-reveal");
+
+    const sampleKeys = ["A", "B", "C"];
     let oddSample = "A";
+    let oddFlavorName = "";
+    let sampleProfiles = {};
+
+    const pickRandomFlavor = () => flavors[Math.floor(Math.random() * flavors.length)];
+
+    const renderTriangleInfo = (sampleKey) => {
+      const flavor = sampleProfiles[sampleKey];
+      if (!flavor) {
+        triangleInfo.innerHTML = '<p class="small">No sample profile available.</p>';
+        return;
+      }
+
+      const stage = (flavor.primary_stage || "unknown").replaceAll("_", " ");
+      const styles = (flavor.common_styles || []).slice(0, 3).join(", ");
+
+      triangleInfo.innerHTML = `
+        <h4>Sample ${sampleKey}</h4>
+        <p class="small"><strong>Profile:</strong> ${flavor.name} (${flavor.nickname})</p>
+        <p class="small"><strong>Family / Stage:</strong> ${flavor.family} / ${stage}</p>
+        <p class="small"><strong>Cue:</strong> ${flavor.description}</p>
+        <p class="small"><strong>Common styles:</strong> ${styles || "N/A"}</p>
+      `;
+    };
+
+    const buildTriangleSet = () => {
+      if (flavors.length === 0) {
+        sampleProfiles = {
+          A: { name: "No data", nickname: "", family: "", primary_stage: "", description: "Flavor data not loaded.", common_styles: [] },
+          B: { name: "No data", nickname: "", family: "", primary_stage: "", description: "Flavor data not loaded.", common_styles: [] },
+          C: { name: "No data", nickname: "", family: "", primary_stage: "", description: "Flavor data not loaded.", common_styles: [] },
+        };
+        oddSample = "A";
+        oddFlavorName = "No data";
+        return;
+      }
+
+      const baseFlavor = pickRandomFlavor();
+      let oddFlavor = pickRandomFlavor();
+
+      if (flavors.length > 1) {
+        let guard = 0;
+        while (oddFlavor.slug === baseFlavor.slug && guard < 12) {
+          oddFlavor = pickRandomFlavor();
+          guard += 1;
+        }
+      }
+
+      oddSample = sampleKeys[Math.floor(Math.random() * sampleKeys.length)];
+      oddFlavorName = oddFlavor.name;
+      sampleProfiles = {
+        A: baseFlavor,
+        B: baseFlavor,
+        C: baseFlavor,
+      };
+      sampleProfiles[oddSample] = oddFlavor;
+    };
 
     const newTriangle = () => {
-      oddSample = ["A", "B", "C"][Math.floor(Math.random() * 3)];
+      buildTriangleSet();
       triangleFeedback.textContent = "New set ready. Choose the odd sample.";
       triangleFeedback.className = "feedback";
       triangleButtons.forEach((btn) => btn.classList.remove("active"));
+      triangleInfo.innerHTML = '<p class="small">Select Sample A, B, or C to view that sample profile information.</p>';
     };
 
     triangleButtons.forEach((btn) => {
@@ -114,6 +177,7 @@
         const selected = btn.dataset.sample;
         triangleButtons.forEach((node) => node.classList.remove("active"));
         btn.classList.add("active");
+        renderTriangleInfo(selected);
 
         if (selected === oddSample) {
           triangleFeedback.textContent = `Correct. Sample ${selected} is the odd one.`;
@@ -127,7 +191,7 @@
 
     triangleNewBtn.addEventListener("click", newTriangle);
     triangleRevealBtn.addEventListener("click", () => {
-      triangleFeedback.textContent = `Answer revealed: sample ${oddSample} is different.`;
+      triangleFeedback.textContent = `Answer revealed: sample ${oddSample} is different (${oddFlavorName}).`;
       triangleFeedback.className = "feedback";
     });
 

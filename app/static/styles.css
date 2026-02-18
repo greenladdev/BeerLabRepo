@@ -771,3 +771,19 @@ body > * {
   background: rgba(255, 255, 255, 0.6);
   font-style: italic;
 }
+
+.triangle-info {
+  margin-top: 0.6rem;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(58, 35, 19, 0.2);
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.triangle-info h4 {
+  margin: 0 0 0.35rem;
+}
+
+.triangle-info .small {
+  margin: 0.2rem 0;
+}
