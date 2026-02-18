@@ -12,7 +12,7 @@
         <button id="triangle-new" class="next-btn" type="button">Deal New Triangle</button>
         <button id="triangle-reveal" class="mode-btn" type="button">Reveal Answer</button>
       </div>
-      <div class="triangle-buttons">
+      <div id="triangle-buttons" class="triangle-buttons">
         <button class="triangle-btn" data-sample="A" type="button">Sample A</button>
         <button class="triangle-btn" data-sample="B" type="button">Sample B</button>
         <button class="triangle-btn" data-sample="C" type="button">Sample C</button>
@@ -72,9 +72,29 @@
   </div>
 </section>
 
+<script id="sensory-flavor-data" type="application/json">{{ flavors|tojson }}</script>
 <script>
   (() => {
-    const flavors = {{ flavors|tojson }};
+    let flavors = [];
+    const flavorDataNode = document.getElementById("sensory-flavor-data");
+
+    try {
+      flavors = JSON.parse(flavorDataNode?.textContent || "[]");
+    } catch (error) {
+      flavors = [];
+    }
+
+    const triangleButtonsWrap = document.getElementById("triangle-buttons");
+    if (triangleButtonsWrap && triangleButtonsWrap.children.length === 0) {
+      ["A", "B", "C"].forEach((label) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "triangle-btn";
+        button.dataset.sample = label;
+        button.textContent = `Sample ${label}`;
+        triangleButtonsWrap.appendChild(button);
+      });
+    }
 
     const triangleButtons = Array.from(document.querySelectorAll(".triangle-btn"));
     const triangleFeedback = document.getElementById("triangle-feedback");
@@ -133,6 +153,13 @@
     };
 
     const nextCue = () => {
+      if (cuePool.length === 0) {
+        thresholdCue.textContent = "No flavor data available for quiz cues.";
+        thresholdOptions.innerHTML = "";
+        thresholdFeedback.textContent = "";
+        return;
+      }
+
       current = cuePool[Math.floor(Math.random() * cuePool.length)];
       thresholdCue.textContent = current.cue;
       thresholdFeedback.textContent = "";
